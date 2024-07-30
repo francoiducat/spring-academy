@@ -4,20 +4,34 @@
 # @DirtiesContext
 
 - forces Spring to start with a clean slate, as if those other tests hadn't been run.
+- add this annotation to all tests which change the data. If not, then these tests could affect the result of other tests
 
-# ResponseEntity
+# Spring Web
 
-ResponseEntity.created(uriOfCashCard).build();
-=> return the uri in the Header Location
-Spring Web (or http) provides the .created()
-Spring Data's CrudRepository provides methods that support creating, reading, updating, and deleting data from a data store. cashCardRepository.save returns the saved object with a unique id provided by the database.
-We were able to add UriComponentsBuilder ucb as a method argument to this POST handler method and it was automatically passed in. How so? It was injected from our now-familiar friend, Spring's IoC Container.
+- @RestController @RequestMapping("/cashcards")
+    - @PostMapping, @PutMapping("/{id}"), @GetMapping("/{id}") @DeleteMapping"/{id}"
+
+
+## ResponseEntity
+- Spring Web (or http) provides the .created()
+    - ResponseEntity.created(uriOfCashCard).build(); => returns the uri in the Header Location
+- UriComponentsBuilder ucb: method argument to POST handler method automatically passed in (injected from our friend, Spring's IoC Container.)
+- restTemplate
+    - withBasicAuth(user, pwd) 
+    - getForEntity(url, responseType) => returns ResponsEntity
+    - postForEntity(url, request, responseType) => returns ResponsEntity
+    - putForEntity() DOES NOT EXIST!
+    - exchange(url, method, request, responseType) => returns ResponsEntity
+    - delete => returns void
+
+# Spring Data
 
 ## PagingAndSortingRepository
 
 - comes from Spring Data Pagination API
     - Provides `PageRequest` and `Sort` classes for pagination
 - implements CrudRepository
+- Spring Data's CrudRepository provides methods that support creating, reading, updating, and deleting data from a data store. cashCardRepository.save returns the saved object with a unique id provided by the database.
 
 ```java
 Page<CashCard> page2 = cashCardRepository.findAll(
@@ -80,7 +94,7 @@ PageRequest.of(
 Adding org.springframework.boot:spring-boot-starter-security without any config locks down the app. (need to specify how authentication and authorization are performed)
 
 `@Configuration` tells Spring to use this class to configure Spring and Spring Boot itself.
-Any Beans specified in this class will now be available to Spring's Auto Configuration engine.
+Any Beans specified in this class will now be available to Spring's <b>Auto Configuration engine</b>.
 Spring Security expects a Bean to configure its Filter Chain
 
 ```java
@@ -98,3 +112,6 @@ class SecurityConfig {
         return http.build();
     }
 ```
+
+   CashCard findByIdAndOwner(Long id, String owner);
+   Page<CashCard> findByOwner(String owner, PageRequest pageRequest);
