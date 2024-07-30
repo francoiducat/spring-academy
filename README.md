@@ -7,7 +7,26 @@
 - DI container (IOC) : spring instantiates and injects dependencies into objects (lifecycle management)
 - no need for Java EE application server
 - Key principles: DRY, SOC, Convention over config, Testability
-## DI container
+
+## Configuration
+
+- Spring separates application config from application objects (beans)
+- Spring manages Objects
+  - creates and initialize them 
+- Spring gives unique id/name to beans
+- Spring Application Context represents Spring DI Container
+  - can be created in any env (standalone, web app, JUnit test)
+- multiple config with `@Import(MyClass.class)`
+- Bean scopes
+  - `singleton` (default): single instance
+  - `prototype`: new instance created each time the bean is referenced
+  - `session`: new instance created once per user session (web only)
+  - `request`: new instance created once per request (web only)
+  - web socket scope
+  - refresh scope
+  - thread scope
+  - custom scope
+ 
 
 # @DirtiesContext
 
