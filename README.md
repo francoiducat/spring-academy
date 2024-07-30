@@ -26,7 +26,27 @@
   - refresh scope
   - thread scope
   - custom scope
- 
+- Accessing **external properties**:
+  - `@PropertySource("file.properties")` on class
+  - or `@Value` on parameter
+- Spring **profiles**:
+  - can represent 
+    - an env (dev, test prod)
+    - an impl (jdbc, jpa)
+    - a deployment platform (one-premise, cloud)
+  - beans are grouped into profiles
+  - `@Profile("dev")` or `@Profile("!prod")` can be at
+    - class level
+    - method level
+  - activated at run time with
+    - command line : `-Dspring.profiles.active=dev`
+    - programmatically: `System.setProperty("spring.profiles.active","dev")` before `SpringApplication.run(AppConfig.class);`
+    - Integration Test only: `@ActiveProfiles`
+- Spring **Expression Languages** (SpEL):
+   - with `@Value("#{maxAttempts}")` 
+     - accessing system properties
+     - accessing spring beans
+   - can provide a fallback with `@Value("#{maxAttempts: 5}")`
 
 # @DirtiesContext
 
