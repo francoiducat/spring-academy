@@ -42,11 +42,34 @@
     - command line : `-Dspring.profiles.active=dev`
     - programmatically: `System.setProperty("spring.profiles.active","dev")` before `SpringApplication.run(AppConfig.class);`
     - Integration Test only: `@ActiveProfiles`
+    - with `@Value("${maxAttempts}")`
 - Spring **Expression Languages** (SpEL):
    - with `@Value("#{maxAttempts}")` 
      - accessing system properties
      - accessing spring beans
    - can provide a fallback with `@Value("#{maxAttempts: 5}")`
+
+### Component Scanning
+- Annotation-based configuration within bean-class `@Configuration @Bean` vs component-scanning with `@Component`
+- `@Autowired(required = false)` default is true
+- `@Qualifier("beanName)` in paramethor 
+- `@Component` name auto-generated de-capitalized
+- `@Lazy @Component` bean created when dependency injected or when `ApplicationContext.getBean` (default true)
+- `@PostConstruct` invoked during bean-creation process (javax not Spring)
+- `@PreDestroy` called when ConfigurableApplicationContext is closed. (javax not Spring)
+- or alternatively`@Bean(initMethod="populateCache",destroyMethod=""flushCache")`
+ 
+### Spring Container
+
+#### LifeCycle
+
+- Initialization
+  - beans created
+  - DI occurs
+- Usage
+  - beans available
+- Destruction
+  - beans released for Garbage Collection
 
 # @DirtiesContext
 
@@ -158,6 +181,7 @@ class SecurityConfig {
              .csrf(csrf -> csrf.disable());
         return http.build();
     }
+}
 ```
 
    CashCard findByIdAndOwner(Long id, String owner);
