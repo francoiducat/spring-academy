@@ -1,5 +1,13 @@
 # spring-academy
 
+# Spring framework
+
+- opensource framework: helps focus on business logic (pojo programing model)
+- lightweight
+- DI container (IOC) : spring instantiates and injects dependencies into objects (lifecycle management)
+- no need for Java EE application server
+- Key principles: DRY, SOC, Convention over config, Testability
+## DI container
 
 # @DirtiesContext
 
