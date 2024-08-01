@@ -104,6 +104,7 @@ Spring suppports
 # Spring AOP (Aspect Oriented Programming)
 
 AOP enables modularization of cross-cutting concerns
+
 **cross-cutting concerns**: generic functionnality needed in many place in the app
 - logging and tracing
 - transaction management
@@ -112,10 +113,12 @@ AOP enables modularization of cross-cutting concerns
 - error handling
 - perf monitoring
 - custom business rules
+
 AOP avoids:
 - code tangling: coupling of concers (hard to test)
 - code scattering: same concern spread across modules (code duplicates)
-AOP technologies
+
+AOP technologies:
 - Aspect J (JDK proxy)
 - Spring AOP (`@Configuration @EnableAspectJAutoProxy`)
  AOP happens during initialization phase: spring wraps the component in a proxy  
