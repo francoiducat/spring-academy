@@ -164,10 +164,43 @@ class that stand in place (transaction, caching etc.)
 - only aspects to spring beans
 - weaving proxies inner calls: suppose method @() calls method b() on the same class/interface then advice will never be executed for method b()
 
-# @DirtiesContext
+# Testing
 
+- Spring TestContext framework provides explicit support for JUnit 4, JUnit Jupiter (AKA JUnit 5), and TestNG
+- External dependencies should be minimized
+- Isolate with stubs and mocks
+- NO need Spring for unit test but YES for integration test
+- With Junit5 via `@ExtendWith(SpringExtension.class)`
+- Define spring config to use via `@ContextConfiguration(classes={TestConfig.class})`
+- Spring'extension via `@SpringExtension`
+
+`@SpringJUnitConfig(TestConfig.class)` is a composed annotation for:
+```java
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes={TestConfig.class})
+```
+
+- `@SpringJunitConfig` without config class specified in () is possible but need to add an inner static class with the config in this testclass.
+- `@TestPropertySource(properties = "", locations = "")`
+- `@ActiveProfiles({"test","jdbc"})`: bean associated to that profil + not associated to any profile
+- `@Sql({"schema.sql","data.sql"})`
+    - at class runs before each `@Test`
+    - method level runs before `@Test` 
+    - `@Sql(scripts="cleanup.sql",executionPhase=Sql.ExecutionPhase.AFTER_TEST_METHOD)` runs after `@Test` method
+    - `@Sql(scripts= "data.sql", config = @SqlConfig(errorMode = ErrorMode.FAIL_ON_°ERROR, commentPrefix = "//", separator = "@@") )` controls what to do if scripts fails
+        - `FAIL_ON_ERROR`
+        - `CONTINUE_ON_ERROR`
+        - `IGNORE_FAILED_DROPS`
+        - `DEFAULT` = whatever `@Sql` defines at class level  otherwise `FAIL_ON_ERROR`
+
+
+## @DirtiesContext
+
+- forces context to be closed (allows testing of `@PreDestroy`)
 - forces Spring to start with a clean slate, as if those other tests hadn't been run.
 - add this annotation to all tests which change the data. If not, then these tests could affect the result of other tests
+- cached context destroyed, 
+
 
 # Spring Web
 

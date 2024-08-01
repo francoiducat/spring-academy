@@ -1,22 +1,27 @@
 package rewards.internal.reward;
 
 import common.datetime.SimpleDate;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import rewards.AccountContribution;
 import rewards.Dining;
 import rewards.RewardConfirmation;
-
-import javax.sql.DataSource;
-import java.sql.*;
 
 /**
  * JDBC implementation of a reward repository that records the result of a reward transaction by inserting a reward
  * confirmation record.
  */
 @Repository
+@Profile("jdbc")
 public class JdbcRewardRepository implements RewardRepository {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());

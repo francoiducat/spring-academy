@@ -1,28 +1,27 @@
 package rewards.internal.restaurant;
 
+import common.money.Percentage;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
-
-import common.money.Percentage;
 
 /**
  * Loads restaurants from a data source using the JDBC API.
  */
 @Repository
+@Profile("jdbc")
 public class JdbcRestaurantRepository implements RestaurantRepository {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
