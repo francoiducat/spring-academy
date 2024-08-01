@@ -1,5 +1,3 @@
-# spring-academy
-
 # Spring framework
 
 - opensource framework: helps focus on business logic (pojo programing model)
@@ -8,7 +6,7 @@
 - no need for Java EE application server
 - Key principles: DRY, SOC, Convention over config, Testability
 
-## Configuration
+# Configuration
 
 - Spring separates application config from application objects (beans)
 - Spring manages Objects
@@ -49,27 +47,119 @@
      - accessing spring beans
    - can provide a fallback with `@Value("#{maxAttempts: 5}")`
 
-### Component Scanning
+## Component Scanning
 - Annotation-based configuration within bean-class `@Configuration @Bean` vs component-scanning with `@Component`
 - `@Autowired(required = false)` default is true
-- `@Qualifier("beanName)` in paramethor 
+- `@Qualifier("beanName")` in parameter or property (after @Autowired )
 - `@Component` name auto-generated de-capitalized
 - `@Lazy @Component` bean created when dependency injected or when `ApplicationContext.getBean` (default true)
 - `@PostConstruct` invoked during bean-creation process (javax not Spring)
 - `@PreDestroy` called when ConfigurableApplicationContext is closed. (javax not Spring)
 - or alternatively`@Bean(initMethod="populateCache",destroyMethod=""flushCache")`
  
-### Spring Container
+# Spring Container
 
-#### LifeCycle
+## LifeCycle
 
-- Initialization
-  - beans created
-  - DI occurs
-- Usage
-  - beans available
-- Destruction
-  - beans released for Garbage Collection
+![Spring Beans Initialization Steps](static/BeanInitSteps.png)
+*Spring Beans Initialization Steps*
+### Initialization: beans created, DI occurs
+#### A.Load & Process : #What should we create ? (Keeps Beans Definition In Memory)
+- Load Beans (javaconfig, xml, annotations,component scan ) 
+    - gather information about the application context (AC is a BeanFactory)
+        - AC BeanFactory : gather bean name, type, scope 
+- Post Process Beans Definition 
+    - interface BeanFactoryPostProcessor
+        - can modify any bean definition before any objects are created
+        - some implementation provided by spring : reading properties (`@Value("${max.retries}")`), registering custom scope...
+        - Use STATIC for custom BFPP: `@Bean public static BFPP mycustomConfigurer() {}`
+#### B. Create and initialize each bean
+- Bean created 
+    - in right order based on dependencies
+    - force dependency order  with `@DependsOn("beanName)`
+- Bean initialized *eagerly* (unless marked *lazy*)
+    - DI: Instantiate + Setter Injection
+- Post Process at bean level BPP(before init & after init)
+- Bean ready to use
+### Usage: beans available
+During previous BPP, bean can be:
+1. Just a bean
+2. a Proxy
+![Bean Or Proxy](static/beanOrProxy.png)
+*Bean Or Proxy*
+
+Spring suppports 
+- JDK proxy
+    - interface based (#implements)
+- *CGLib Proxy* 
+    - subclass based (#extends)
+
+### Destruction: beans clean up 
+
+1. Any registered `@PreDestroy` methods are invoked
+=> Don't happen if application is killed or fails
+
+2. Beans released for Garbage Collection
+
+# Spring AOP (Aspect Oriented Programming)
+
+AOP enables modularization of cross-cutting concerns
+**cross-cutting concerns**: generic functionnality needed in many place in the app
+- logging and tracing
+- transaction management
+- security
+- caching
+- error handling
+- perf monitoring
+- custom business rules
+AOP avoids:
+- code tangling: coupling of concers (hard to test)
+- code scattering: same concern spread across modules (code duplicates)
+AOP technologies
+- Aspect J (JDK proxy)
+- Spring AOP (`@Configuration @EnableAspectJAutoProxy`)
+ AOP happens during initialization phase: spring wraps the component in a proxy  
+
+## AOP Concepts
+### Join Point
+method call or exception trown
+### Pointcut
+expression that select one or more join points
+
+![Expression](static/expression.png)
+
+- `*` matches only once
+- `..` matches zero or more
+
+Any class annnotated *@Cacheable*:
+
+```java
+@Before(value = "execution(@example.Cacheable * rewards.. *.*(..))")
+```
+
+### Advice
+code to be executed at each join point with:
+- `@Before(value= "pointcut execution")`
+- `@AfterReturning(value = "", returning="reward")`
+- `@AfterThrowing(value="", throwing= "ex")` can return a different type of exception
+- `@After()`
+- `@Around()` 
+    - for before and/or after 
+    - need to implement `proceed()` method
+
+### Aspect
+module (java class) that encapsulates pointcuts and advice annotated with `@Aspect`
+### Weaving
+technique by which aspects are combined with main code
+### Proxy
+someone else, web proxy etc. 
+### AOP Proxy
+class that stand in place (transaction, caching etc.)
+
+## AOP Limits
+- only non-private method
+- only aspects to spring beans
+- weaving proxies inner calls: suppose method @() calls method b() on the same class/interface then advice will never be executed for method b()
 
 # @DirtiesContext
 

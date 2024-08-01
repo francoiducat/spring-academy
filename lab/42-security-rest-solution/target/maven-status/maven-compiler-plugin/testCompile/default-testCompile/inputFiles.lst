@@ -1,0 +1,5 @@
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest-solution/src/test/java/accounts/web/AccountControllerTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest-solution/src/test/java/accounts/client/AccountClientTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest-solution/src/test/java/accounts/services/AccountServiceMethodSecurityTest.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest-solution/src/test/java/accounts/web/AccountControllerCustomUserDetailsServiceTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest-solution/src/test/java/accounts/web/AccountControllerCustomAuthenticationProviderTests.java

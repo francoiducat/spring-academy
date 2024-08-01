@@ -1,0 +1,16 @@
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/internal/RewardNetworkImplTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/internal/StubRewardRepository.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/internal/aspects/RepositoryPerformanceLogTest.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/LoggingAspectTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/internal/restaurant/JdbcRestaurantRepositoryTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/internal/account/JdbcAccountRepositoryTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/internal/StubRestaurantRepository.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/DBExceptionHandlingAspectTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/DbExceptionTestConfig.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/SystemTestConfig.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/RewardNetworkTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/internal/StubAccountRepository.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/internal/restaurant/RestaurantTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/internal/reward/JdbcRewardRepositoryTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/internal/account/AccountTests.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/22-aop-solution/src/test/java/rewards/CaptureSystemOutput.java

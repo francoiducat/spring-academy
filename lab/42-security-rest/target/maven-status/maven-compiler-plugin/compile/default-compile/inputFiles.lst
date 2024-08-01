@@ -1,0 +1,6 @@
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest/src/main/java/accounts/RestWsApplication.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest/src/main/java/accounts/services/AccountService.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest/src/main/java/config/RestSecurityConfig.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest/src/main/java/accounts/security/CustomAuthenticationProvider.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest/src/main/java/accounts/web/AccountController.java
+/Users/FRANCOIS/Workspace/FDUCAT/spring-academy/lab/42-security-rest/src/main/java/accounts/security/CustomUserDetailsService.java
