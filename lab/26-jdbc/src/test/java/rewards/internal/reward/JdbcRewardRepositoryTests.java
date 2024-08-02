@@ -1,8 +1,15 @@
 package rewards.internal.reward;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import common.datetime.SimpleDate;
 import common.money.MonetaryAmount;
 import common.money.Percentage;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.Map;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,14 +18,6 @@ import rewards.AccountContribution;
 import rewards.Dining;
 import rewards.RewardConfirmation;
 import rewards.internal.account.Account;
-
-import javax.sql.DataSource;
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests the JDBC reward repository with a test data source to verify
@@ -42,8 +41,8 @@ public class JdbcRewardRepositoryTests {
 	@BeforeEach
 	public void setUp() throws Exception {
 		dataSource = createTestDataSource();
-		repository = new JdbcRewardRepository(dataSource);
 		jdbcTemplate = new JdbcTemplate(dataSource);
+		repository = new JdbcRewardRepository(jdbcTemplate);
 	}
 
 	@Test
@@ -74,8 +73,9 @@ public class JdbcRewardRepositoryTests {
 		//	  (If you are using Gradle, comment out the test exclude in
 		//    the build.gradle file.)
 		//
-		
-		Map<String, Object> values = null;
+
+		Map<String, Object> values;
+		values = jdbcTemplate.queryForMap("SELECT * FROM T_REWARD WHERE CONFIRMATION_NUMBER = ?", confirmation.getConfirmationNumber());
 		verifyInsertedValues(confirmation, dining, values);
 	}
 
@@ -92,7 +92,7 @@ public class JdbcRewardRepositoryTests {
 	private int getRewardCount() throws SQLException {
 		// TODO-01: Use JdbcTemplate to query for the number of rows in the T_REWARD table
 		// - Use "SELECT count(*) FROM T_REWARD" as SQL statement
-		return -1;
+		return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM T_REWARD", Integer.class);
 	}
 
 	private DataSource createTestDataSource() {

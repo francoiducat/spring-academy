@@ -5,6 +5,7 @@
 - DI container (IOC) : spring instantiates and injects dependencies into objects (lifecycle management)
 - no need for Java EE application server
 - Key principles: DRY, SOC, Convention over config, Testability
+- Spring provides templates: JdbcTemplate, JmsTemplate, RestTemplate, WebServiceTemplate ...
 
 # Configuration
 
@@ -170,9 +171,8 @@ class that stand in place (transaction, caching etc.)
 - External dependencies should be minimized
 - Isolate with stubs and mocks
 - NO need Spring for unit test but YES for integration test
-- With Junit5 via `@ExtendWith(SpringExtension.class)`
+- With Junit5 and Spring'extension via `@ExtendWith(SpringExtension.class)`
 - Define spring config to use via `@ContextConfiguration(classes={TestConfig.class})`
-- Spring'extension via `@SpringExtension`
 
 `@SpringJUnitConfig(TestConfig.class)` is a composed annotation for:
 ```java
@@ -180,7 +180,7 @@ class that stand in place (transaction, caching etc.)
 @ContextConfiguration(classes={TestConfig.class})
 ```
 
-- `@SpringJunitConfig` without config class specified in () is possible but need to add an inner static class with the config in this testclass.
+- `@SpringJunitConfig` without config class specified in () is possible but need to add an inner static class with the config in this test class.
 - `@TestPropertySource(properties = "", locations = "")`
 - `@ActiveProfiles({"test","jdbc"})`: bean associated to that profil + not associated to any profile
 - `@Sql({"schema.sql","data.sql"})`
@@ -202,6 +202,72 @@ class that stand in place (transaction, caching etc.)
 - cached context destroyed, 
 
 
+# Spring JDBC
+
+## JDBC API limits
+- boilerplate code, error prone code
+- must check SQLException
+
+## JDBC template
+- Rod Johson "Life is too short to write JDBC"
+- JDBC template requires a DataSource : `JdbcTemplate template = new JdbcTemplate(datasource);`
+- Do not create one for each thread (Inject it in constructor class and re-use it in methods)
+- Thread safe after construction  
+- JdbcTemplate can query for Simple types (int, long String Date ...), Generic Maps, Domain Objects
+- jdbcTemplate.queryForObject
+    - connection acquisition
+    - transaction participation
+    - statement execution
+    - resultset process (results.add(rowMapper.mapRow(resultset,rowNumber)))
+    - exception handling
+    - connection release
+```java
+int count = jdbcTemplate.queryForObject("SELECT blabla", Integer.class);
+```
+- Query with bind variable using `?`
+```java
+String sql = "SELECT count(1) from PERSON WHERE age > ? and education = ?";
+int count = jdbcTemplate.queryForObject(sql, Integer.class, age, education.toString());
+```
+- jdbcTemplate.insert DOES NOT EXIST. Any non-SELECT SQL is run using `jdbcTemplate.update()`:
+```java
+jdbcTemplate.update("INSERT INTO PERSON (name,age) VALUES (?,?)", person.getName(), person.getAge());
+``` 
+- JdbcTemplate can return each row of a rs as a Map
+    - expecting single row: use `queryForMap`
+```java
+Map<String,Object> getPersonDetails(String id) {
+    return jdbcTemplate.queryForMap("SELECT * FROM PERSON where ID = ? ", id);
+}
+// Returns Map of key (column name) value (column values)
+// Map { ID = 1, FIRST_NAME="John", LAST_NAME="Doe"}
+```
+    - expecting multiple rows: use `queryForList` returns a List of Map
+```java
+List<Map<String,Object>> getAllPersons() {
+    return jdbcTemplate.queryForList("SELECT * FROM PERSON");
+}
+// Returns List of Maps  
+// List {
+// 0 - Map { ID = 1, FIRST_NAME="John", LAST_NAME="Doe"}
+// 1 - Map { ID = 2, FIRST_NAME="Bod", LAST_NAME="Smith"}
+// 2 - Map { ID = 3, FIRST_NAME="Sarah", LAST_NAME="Connor"}
+// }
+//}
+```
+- Map rs with domain object with jdbcTemplate.queryForObject (with callback and lambda)
+```java
+Customer customer = jdbcTemplate.queryForObject("SELECT * PERSON where ID = ?",
+(rs, rowNum) -> new Customer(rs.getString(name)), id);
+```
+- Map rs with domain objects with jdbcTemplate.query (with callback with explicit RowMapper)
+```java
+List<Customer> customers = jdbcTemplate.query("SELECT blabla", 
+new RowMapper<Customer>(){
+    public Customer mapRow(ResultSet rs, int row) throws SQLException ¶
+    // map current row to a customer
+})
+```
 # Spring Web
 
 - @RestController @RequestMapping("/cashcards")
