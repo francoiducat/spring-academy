@@ -208,7 +208,7 @@ class that stand in place (transaction, caching etc.)
 - boilerplate code, error prone code
 - must check SQLException
 
-## JDBC template
+## JdbcTemplate
 - Rod Johson "Life is too short to write JDBC"
 - JDBC template requires a DataSource : `JdbcTemplate template = new JdbcTemplate(datasource);`
 - Do not create one for each thread (Inject it in constructor class and re-use it in methods)
@@ -233,8 +233,11 @@ int count = jdbcTemplate.queryForObject(sql, Integer.class, age, education.toStr
 ```java
 jdbcTemplate.update("INSERT INTO PERSON (name,age) VALUES (?,?)", person.getName(), person.getAge());
 ``` 
+
 - JdbcTemplate can return each row of a rs as a Map
     - expecting single row: use `queryForMap`
+    - expecting multiple rows: use `queryForList` returns a List of Map
+
 ```java
 Map<String,Object> getPersonDetails(String id) {
     return jdbcTemplate.queryForMap("SELECT * FROM PERSON where ID = ? ", id);
@@ -242,7 +245,7 @@ Map<String,Object> getPersonDetails(String id) {
 // Returns Map of key (column name) value (column values)
 // Map { ID = 1, FIRST_NAME="John", LAST_NAME="Doe"}
 ```
-    - expecting multiple rows: use `queryForList` returns a List of Map
+
 ```java
 List<Map<String,Object>> getAllPersons() {
     return jdbcTemplate.queryForList("SELECT * FROM PERSON");
@@ -255,12 +258,17 @@ List<Map<String,Object>> getAllPersons() {
 // }
 //}
 ```
-- Map rs with domain object with jdbcTemplate.queryForObject (with callback and lambda)
+
+### RowMapper interface
+- for mapping a single row of a rs to an object
+- used for both single or multiple row queries
+- return type paramatized
+- Map rs with one domain object with jdbcTemplate.queryForObject (with callback and lambda)
 ```java
 Customer customer = jdbcTemplate.queryForObject("SELECT * PERSON where ID = ?",
 (rs, rowNum) -> new Customer(rs.getString(name)), id);
 ```
-- Map rs with domain objects with jdbcTemplate.query (with callback with explicit RowMapper)
+- Map rs with list of domain objects with jdbcTemplate.query (with callback with explicit RowMapper)
 ```java
 List<Customer> customers = jdbcTemplate.query("SELECT blabla", 
 new RowMapper<Customer>(){
@@ -268,6 +276,28 @@ new RowMapper<Customer>(){
     // map current row to a customer
 })
 ```
+
+### ResultSetExtracor interface
+- for mapping an entire rs to an object
+- iterating on rs not automatic
+
+### RowCallbackHandler interface
+
+### Exception handling
+
+#### Checked Exceptions
+- force developers to handle erros
+- ex: SQLException 
+#### Unchecked Exceptions
+- Spring always throws Runtime (unchecked) Exceptions 
+- `DataAccessException` hierarchy of sub-exceptions that hides whether using JPA, Hi bernate, JDBC etc.
+     - BadSqlGrammarException (column not found eg)
+     - DataIntegrityViolationException
+     - DataAccessResourceFailureException
+     - CleanupFailureDataAccessException
+     - OptimisticLocking Exception
+
+
 # Spring Web
 
 - @RestController @RequestMapping("/cashcards")
