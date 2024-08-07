@@ -151,7 +151,7 @@ code to be executed at each join point with:
     - for before and/or after 
     - need to implement `proceed()` method
 
-### Aspect
+### Aspect 
 module (java class) that encapsulates pointcuts and advice annotated with `@Aspect`
 ### Weaving
 technique by which aspects are combined with main code
@@ -259,29 +259,66 @@ List<Map<String,Object>> getAllPersons() {
 //}
 ```
 
-### RowMapper interface
+### RowMapper functional interface 
+```java
+@FunctionalInterface
+public interface RowMapper<T> {
+  T mapRow(ResultSet rs, int rowNum) throws SQLException;
+  }
+```
+
 - for mapping a single row of a rs to an object
 - used for both single or multiple row queries
 - return type paramatized
-- Map rs with one domain object with jdbcTemplate.queryForObject (with callback and lambda)
+#### Query for single row
+- Map rs with one domain object with jdbcTemplate.queryForObject (with lambda or callback)
 ```java
 Customer customer = jdbcTemplate.queryForObject("SELECT * PERSON where ID = ?",
 (rs, rowNum) -> new Customer(rs.getString(name)), id);
 ```
+or
+```java
+	public Restaurant findByMerchantNumber(String merchantNumber) {
+		String sql = "select MERCHANT_NUMBER, NAME, BENEFIT_PERCENTAGE, BENEFIT_AVAILABILITY_POLICY"
+				+ " from T_RESTAURANT where MERCHANT_NUMBER = ?";
+		return jdbcTemplate.queryForObject(sql, new
+        RowMapper<Restaurant>() {
+          public Restaurant mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return mapRestaurant(rs);
+          }
+        }, merchantNumber);
+	}
+```
+#### Query for multiple rows
 - Map rs with list of domain objects with jdbcTemplate.query (with callback with explicit RowMapper)
 ```java
 List<Customer> customers = jdbcTemplate.query("SELECT blabla", 
 new RowMapper<Customer>(){
-    public Customer mapRow(ResultSet rs, int row) throws SQLException ¶
-    // map current row to a customer
+    public Customer mapRow(ResultSet rs, int rowNum) throws SQLException ¶
+    // do the mapping from rs
 })
 ```
 
-### ResultSetExtracor interface
+### ResultSetExtracor functional interface
+```java
+@FunctionalInterface
+public interface ResultSetExtractor<T> {
+  T extractData(ResultSet rs) throws SQLException, DataAccessException;
+}
+```
 - for mapping an entire rs to an object
-- iterating on rs not automatic
+    - n to one Mapping
+    - #sqlWithJoin
+- iterating on rs not automatic => `while(rs.next()) {rs.getString("name") blabla}`
+- 
 
-### RowCallbackHandler interface
+### RowCallbackHandler functional interface
+```java
+@FunctionalInterface
+public interface RowCallbackHandler<T> {
+  void processRow(ResultSet rs) throws SQLException, DataAccessException;
+}
+```
 
 ### Exception handling
 
