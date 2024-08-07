@@ -1,15 +1,13 @@
 package rewards.internal.restaurant;
 
 import common.money.Percentage;
-import org.springframework.dao.EmptyResultDataAccessException;
-import rewards.Dining;
-import rewards.internal.account.Account;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import rewards.Dining;
+import rewards.internal.account.Account;
 
 /**
  * Loads restaurants from a data source using the JDBC API.
@@ -38,29 +36,40 @@ import java.sql.SQLException;
 
 public class JdbcRestaurantRepository implements RestaurantRepository {
 
-	private DataSource dataSource;
+	private JdbcTemplate jdbcTemplate;
 
-	public JdbcRestaurantRepository(DataSource dataSource) {
-		this.dataSource = dataSource;
+	public JdbcRestaurantRepository(JdbcTemplate jdbcTemplate) {
+		this.jdbcTemplate = jdbcTemplate;
 	}
+
+	private class RestaurantRowMapper implements RowMapper<Restaurant> {
+		public Restaurant mapRow(ResultSet rs, int rowNum) throws SQLException {
+			return mapRestaurant(rs);
+		}
+	}
+
+	private RowMapper<Restaurant> rowMapper = new RestaurantRowMapper();
+
+//	public Restaurant findByMerchantNumber(String merchantNumber) {
+//		String sql = "select MERCHANT_NUMBER, NAME, BENEFIT_PERCENTAGE, BENEFIT_AVAILABILITY_POLICY"
+//				+ " from T_RESTAURANT where MERCHANT_NUMBER = ?";
+//		// map current row to a customer
+//		Restaurant restaurant = jdbcTemplate.queryForObject(sql, this::mapRestaurant, merchantNumber);
+//
+//		return restaurant ;	}
 
 	public Restaurant findByMerchantNumber(String merchantNumber) {
 		String sql = "select MERCHANT_NUMBER, NAME, BENEFIT_PERCENTAGE, BENEFIT_AVAILABILITY_POLICY"
 				+ " from T_RESTAURANT where MERCHANT_NUMBER = ?";
-		Restaurant restaurant = null;
+    // map current row to a customer
+		Restaurant restaurant = jdbcTemplate.queryForObject(sql, new
+        RowMapper<>() {
+          public Restaurant mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return mapRestaurant(rs);
+          }
+        }, merchantNumber);
 
-		try (Connection conn = dataSource.getConnection();
-			 PreparedStatement ps = conn.prepareStatement(sql) ){
-			ps.setString(1, merchantNumber);
-			ResultSet rs = ps.executeQuery();
-			advanceToNextRow(rs);
-			restaurant = mapRestaurant(rs);
-		} catch (SQLException e) {
-			throw new RuntimeException("SQL exception occurred finding by merchant number", e);
-		}
-
-		return restaurant;
-	}
+		return restaurant ;	}
 
 	/**
 	 * Maps a row returned from a query of T_RESTAURANT to a Restaurant object.
