@@ -8,7 +8,96 @@
 
 ## Dependency Management
 in the pom
+
+## Spring Boot Properties
+
+### Property files
+
+#### application.properties files
+`application.properties` (or `.yml`) found by Spring Boot in this order
+
+- /config from working directory
+- the working directory
+- config package in classpath
+- classpath root
+
+and creates a **PropertySource** based on these files.
+
+#### application-{profile}.properties files
+
+#### multiple profile specific in single file
+
+![multiple profile specific](static/multipleProfileSpecific.png)
+
+#### Precedence
+
+1. Devtools settings
+2. `@TestPropertySource` and `@SpringBootTest` props
+3. Command line args
+4. SPRING_APPLICATION_JSON (inline json props)
+5. ServletConfig/Context params
+6. JNDI attributes from java:comp/env
+7. Java System props
+8. OS env vars
+9. Profile-specific app properties
+10. App properties
+11. `@PropertySource` files
+12. SpringApplication.setDefaultProperties
+
+### @ConfigurationProperties
+
+It simplifies handling of large amount of properties
+It maps properties into classes:
+
+```java
+@ConfigurationProperties(prefix="rewards.client")
+public class ConnectionSettings {
+    private String host;
+    private int port;
+}
+```
+
+This must be a Spring managed beans injected in configuration classes. 3 ways to do it:
+
+```java
+@SpringBootApplication
+@EnableConfigurationProperties(ConnectionSettings.class)
+public class RewardsApplication { }
+```
+
+```java
+@SpringBootApplication
+@ConfigurationPropertiesScan
+public class RewardsApplication { }
+```
+
+```java
+@Component
+@ConfigurationProperties("rewards.client-connection")
+public class ConnectionSettings {
+    private String hostUrl;
+}
+```
+
+**Relaxed binding**, valid matches:
+
+- rewards.client-connection.host-url
+- rewards.client_connection.host_url
+- rewards.clientConnection.hostUrl
+- REWARDS_CLIENTCONNECTION_HOSTURL
+
 ## Autoconfiguration
+
+How? SpringBoot provides configuration classes with conditions.
+It initialises components based on conditions like:
+- do classpath contents include specific classes?
+- are some props set?
+- are some beans already configured (or not)?
+
+SB auto-configuration is
+- managed by a set of auto-configuration classes which uses @Conditional's
+- enabled by `@EnableAutoConfiguration`
+
 ```java
 @SpringBootConfiguration
 @ComponentScan("example.config")
@@ -18,6 +107,54 @@ equals
 ```java
 @SpringBootApplication(scanBasePackages="example.config")
 ```
+
+## Override default configuration
+
+Overriding options :
+
+1. Set some Spring Boot's props (`application.properties` files)
+2. Explicitly define beans (so SB won't)
+
+Example: A `DataSource.class` defined stops SB from autoconfiguring a default `DataSource`.
+
+3. Explicitly disable some auto-config 
+
+via annotation:
+```java
+@EnableAutoApplication(exclude="DataSourceAutoConfiguration.class")
+```
+or props file:
+```yml
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class
+```
+4. Change dependencies or their versions
+
+in `pom.xml` with properties or dependencies management sections
+```xml
+<properties>
+  <spring-framework.versions>5.3.22</spring-framework.versions>
+</properties>
+```
+
+```xml
+<dependency>
+  <groupID>org.springframework.boot</groupID>
+  <artifactId>spring-boot-starter-web</artifactId>
+  <exclusions>
+    <exclusion>
+      <groupID>org.springframework.boot</groupID>
+      <artifactId>spring-boot-starter-tomcat</artifactId> // Exclude tomcat
+    </exclusion>
+  </exclusions>
+</dependency>
+<dependency>
+  <groupID>org.springframework.boot</groupID>
+  <artifactId>spring-boot-starter-jetty</artifactId> //use Jetty
+</dependency>
+```
+
 ## Packaging and Runtime
 ### Spring Boot (Maven) Plugin
 "fat" jar including dependencies and tomcat with **Spring Boot  Plugin** (gradle assemble or mvn package) 
@@ -39,6 +176,8 @@ class MyServiceTests {
 
 }
 ```
+
+
 
  
 
