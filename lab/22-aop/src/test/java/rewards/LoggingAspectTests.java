@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import rewards.CaptureSystemOutput.OutputCapture;
+import rewards.internal.account.Account;
 import rewards.internal.account.AccountRepository;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,6 +24,7 @@ public class LoggingAspectTests {
 	@CaptureSystemOutput
 	public void testLogger(OutputCapture capture) {
 		repository.findByCreditCard("1234123412341234");
+		repository.updateBeneficiaries(new Account("1","john doe"));
 
 		if (TestConstants.CHECK_CONSOLE_OUTPUT) {
 			// AOP VERIFICATION

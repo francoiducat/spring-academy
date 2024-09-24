@@ -1,4 +1,48 @@
-# Spring framework
+# Spring Boot
+- opinionated view of spring fwk
+- 3 files to get running
+  - pom.xml (<parent>spring-boot-starter-parent</parent>)
+  - application.properties
+  - Application.class (`@SpringBootApplication`)
+- JdbcTemplate bean automatically configured through auto-configuration
+
+## Dependency Management
+in the pom
+## Autoconfiguration
+```java
+@SpringBootConfiguration
+@ComponentScan("example.config")
+@EnableAutoConfiguration
+```
+equals
+```java
+@SpringBootApplication(scanBasePackages="example.config")
+```
+## Packaging and Runtime
+### Spring Boot (Maven) Plugin
+"fat" jar including dependencies and tomcat with **Spring Boot  Plugin** (gradle assemble or mvn package) 
+- 2 jars are created.
+- run with `java -jar mySpringBootApp.jar`
+## Integration Test
+```java
+@SpringBootTest(classes=Application.class)
+class MyServiceTests {
+
+}
+```
+@SpringBootTest searches for @SpringBootConfiguration
+```java
+@SpringBootConfiguration(classes=Application.class)
+@EnableAutoConfiguration
+@ComponentScan("example")
+class MyServiceTests {
+
+}
+```
+
+ 
+
+# Spring Framework
 
 - opensource framework: helps focus on business logic (pojo programing model)
 - lightweight
@@ -7,7 +51,7 @@
 - Key principles: DRY, SOC, Convention over config, Testability
 - Spring provides templates: JdbcTemplate, JmsTemplate, RestTemplate, WebServiceTemplate ...
 
-# Configuration
+## Configuration
 
 - Spring separates application config from application objects (beans)
 - Spring manages Objects
@@ -48,7 +92,7 @@
      - accessing spring beans
    - can provide a fallback with `@Value("#{maxAttempts: 5}")`
 
-## Component Scanning
+### Component Scanning
 - Annotation-based configuration within bean-class `@Configuration @Bean` vs component-scanning with `@Component`
 - `@Autowired(required = false)` default is true
 - `@Qualifier("beanName")` in parameter or property (after @Autowired )
@@ -58,9 +102,9 @@
 - `@PreDestroy` called when ConfigurableApplicationContext is closed. (javax not Spring)
 - or alternatively`@Bean(initMethod="populateCache",destroyMethod=""flushCache")`
  
-# Spring Container
+## Spring Container
 
-## LifeCycle
+### LifeCycle
 
 ![Spring Beans Initialization Steps](static/BeanInitSteps.png)
 *Spring Beans Initialization Steps*
@@ -102,7 +146,7 @@ Spring suppports
 
 2. Beans released for Garbage Collection
 
-# Spring AOP (Aspect Oriented Programming)
+## Spring AOP (Aspect Oriented Programming)
 
 AOP enables modularization of cross-cutting concerns
 
@@ -124,10 +168,10 @@ AOP technologies:
 - Spring AOP (`@Configuration @EnableAspectJAutoProxy`)
  AOP happens during initialization phase: spring wraps the component in a proxy  
 
-## AOP Concepts
-### Join Point
+### AOP Concepts
+#### Join Point
 method call or exception trown
-### Pointcut
+#### Pointcut
 expression that select one or more join points
 
 ![Expression](static/expression.png)
@@ -141,7 +185,7 @@ Any class annnotated *@Cacheable*:
 @Before(value = "execution(@example.Cacheable * rewards.. *.*(..))")
 ```
 
-### Advice
+#### Advice
 code to be executed at each join point with:
 - `@Before(value= "pointcut execution")`
 - `@AfterReturning(value = "", returning="reward")`
@@ -151,21 +195,21 @@ code to be executed at each join point with:
     - for before and/or after 
     - need to implement `proceed()` method
 
-### Aspect 
+#### Aspect 
 module (java class) that encapsulates pointcuts and advice annotated with `@Aspect`
-### Weaving
+#### Weaving
 technique by which aspects are combined with main code
-### Proxy
+#### Proxy
 someone else, web proxy etc. 
-### AOP Proxy
+#### AOP Proxy
 class that stand in place (transaction, caching etc.)
 
-## AOP Limits
+### AOP Limits
 - only non-private method
 - only aspects to spring beans
 - weaving proxies inner calls: suppose method @() calls method b() on the same class/interface then advice will never be executed for method b()
 
-# Testing
+## Spring Testing
 
 - Spring TestContext framework provides explicit support for JUnit 4, JUnit Jupiter (AKA JUnit 5), and TestNG
 - External dependencies should be minimized
@@ -194,7 +238,7 @@ class that stand in place (transaction, caching etc.)
         - `DEFAULT` = whatever `@Sql` defines at class level  otherwise `FAIL_ON_ERROR`
 
 
-## @DirtiesContext
+### @DirtiesContext
 
 - forces context to be closed (allows testing of `@PreDestroy`)
 - forces Spring to start with a clean slate, as if those other tests hadn't been run.
@@ -202,13 +246,13 @@ class that stand in place (transaction, caching etc.)
 - cached context destroyed, 
 
 
-# Spring JDBC
+## Spring JDBC
 
-## JDBC API limits
+### JDBC API limits
 - boilerplate code, error prone code
 - must check SQLException
 
-## JdbcTemplate
+### JdbcTemplate
 - Rod Johson "Life is too short to write JDBC"
 - JDBC template requires a DataSource : `JdbcTemplate template = new JdbcTemplate(datasource);`
 - Do not create one for each thread (Inject it in constructor class and re-use it in methods)
@@ -259,7 +303,7 @@ List<Map<String,Object>> getAllPersons() {
 //}
 ```
 
-### RowMapper functional interface 
+#### RowMapper functional interface 
 ```java
 @FunctionalInterface
 public interface RowMapper<T> {
@@ -270,7 +314,7 @@ public interface RowMapper<T> {
 - for mapping a single row of a rs to an object
 - used for both single or multiple row queries
 - return type paramatized
-#### Query for single row
+##### Query for single row
 - Map rs with one domain object with jdbcTemplate.queryForObject (with lambda or callback)
 ```java
 Customer customer = jdbcTemplate.queryForObject("SELECT * PERSON where ID = ?",
@@ -289,7 +333,7 @@ or
         }, merchantNumber);
 	}
 ```
-#### Query for multiple rows
+##### Query for multiple rows
 - Map rs with list of domain objects with jdbcTemplate.query (with callback with explicit RowMapper)
 ```java
 List<Customer> customers = jdbcTemplate.query("SELECT blabla", 
@@ -299,7 +343,7 @@ new RowMapper<Customer>(){
 })
 ```
 
-### ResultSetExtracor functional interface
+#### ResultSetExtracor functional interface
 ```java
 @FunctionalInterface
 public interface ResultSetExtractor<T> {
@@ -312,7 +356,7 @@ public interface ResultSetExtractor<T> {
 - iterating on rs not automatic => `while(rs.next()) {rs.getString("name") blabla}`
 - 
 
-### RowCallbackHandler functional interface
+#### RowCallbackHandler functional interface
 ```java
 @FunctionalInterface
 public interface RowCallbackHandler<T> {
@@ -327,7 +371,7 @@ public interface RowCallbackHandler<T> {
 - ex: SQLException 
 #### Unchecked Exceptions
 - Spring always throws Runtime (unchecked) Exceptions 
-- `DataAccessException` hierarchy of sub-exceptions that hides whether using JPA, Hi bernate, JDBC etc.
+- `DataAccessException` hierarchy of sub-exceptions that hides whether using JPA, Hibernate, JDBC etc.
      - BadSqlGrammarException (column not found eg)
      - DataIntegrityViolationException
      - DataAccessResourceFailureException
@@ -335,13 +379,97 @@ public interface RowCallbackHandler<T> {
      - OptimisticLocking Exception
 
 
-# Spring Web
+## Spring Transaction Management
+
+### Non-Transactional
+When a unit-of-work containes 4 data access operations (eg SELECT, SELECT, UPDATE, INSERT), each acquires, uses and releases a distinct Connection. 
+
+### Transactional
+- Enable concurrent access to a shared resource.
+- A set of tasks which take place as a single, indivisible action
+- A unit of work that should be ATOMIC
+#### Atomic 
+Each unit of work is an All-or-nothing operation
+#### Consistent
+Database integrity Constraints are never violated
+#### Isolated
+Isolating transactions from each other
+#### Durable
+Committed changes are permanent (#final )
+
+### Implementation
+1. Declare a `PlatformTransactionManager` bean. Several implementation available:
+  - DataSourceTransactionManager
+  - JmsTransactionManager
+  - JpaTransactionManager
+  - JtaTransactionManager
+  - WebLogicJtaTransactionManager
+  - WebSphereUowTransactionManager
+```java
+@Bean
+public PlatformTransactionManager transactionManager(DataSource dataSource) {
+  return new DataSourceTransactionManager(datasource);
+}
+```
+Declare `@Transactional` above relevant class or method(props overrided )
+- wrapped in a proxy with *around* advice
+- Rollback if method throws a Runtime Exception. Checked exceptions don't. (unless config specifies the contrary)
+- commit at the end of the method
+- transaction started before entering the method
+- all controlled by config
+2. Add `@EnableTransactionManagement` in config class
+
+Transaction bound to current thread.
+- holds underlying JDBC connection
+- access manually with `DataSourceUtils.getConnection(datasource)`
+- different from javax.transaction.Transactional (fewer options, supported by Spring)
+
+### Transaction Propagation
+Wether Connection to datasource gets opened/closed.
+#### REQUIRED (default)
+`@Transactional(propagation=Propagation.REQUIRED)`
+Needs a connection. Takes the current if exists or create a new one.
+#### REQUIRES_NEW
+`@Transactional(propagation=Propagation.REQUIRES_NEW)`
+
+Since it uses an around advice, no new connection acquired because the *update2()* method is into a method with around advice.
+The propagation rule does not get applied because the call is internal (the inner call does not go through a proxy.)
+*update1()* and *update2()* will participate in the same transaction
+```java
+class ClientService {
+  @Transactional(propagation=Propagation.REQUIRED)
+  void update1() {
+    update2()
+  }
+    @Transactional(propagation=Propagation.REQUIRES_NEW)
+  void update2() {
+  }
+}
+```
+### Rollback Rules
+#### Default
+Rollback if method throws a Runtime Exception. Checked exceptions don't. (unless config specifies the contrary)
+#### Overridden
+```java
+  @Transactional(rollbackFor=MyCheckedException.class,
+              noRollbackFor={JmxException.class, MailException.class})
+  public RewardConfirmation rewardAccount() throws Exception {
+    
+  }
+```
+### Testing Transaction
+Annotate test method with `@Transactional` 
+- Transaction rolled back afterwards
+Annotate class with `@Transactional` 
+- all tests transactional
+- add `@Commit` for test method we want to commit data. 
+
+## Spring Web
 
 - @RestController @RequestMapping("/cashcards")
     - @PostMapping, @PutMapping("/{id}"), @GetMapping("/{id}") @DeleteMapping"/{id}"
 
-
-## ResponseEntity
+### ResponseEntity
 - Spring Web (or http) provides the .created()
     - ResponseEntity.created(uriOfCashCard).build(); => returns the uri in the Header Location
 - UriComponentsBuilder ucb: method argument to POST handler method automatically passed in (injected from our friend, Spring's IoC Container.)
@@ -353,10 +481,8 @@ public interface RowCallbackHandler<T> {
     - exchange(url, method, request, responseType) => returns ResponsEntity
     - delete => returns void
 
-# Spring Data
-
-## PagingAndSortingRepository
-
+## Spring Data
+### PagingAndSortingRepository
 - comes from Spring Data Pagination API
     - Provides `PageRequest` and `Sort` classes for pagination
 - implements CrudRepository
@@ -370,7 +496,7 @@ Page<CashCard> page2 = cashCardRepository.findAll(
         Sort.by(new Sort.Order(Sort.Direction.DESC, "amount"))));
 ```
 
-## Pageable
+### Pageable
 allows Spring to parse out the 'page' number and 'size' query string parameters.
 getSortOr() : no default so has to be specified
 
@@ -380,12 +506,12 @@ PageRequest.of(
                    pageable.getPageSize(),
                    pageable.getSortOr(Sort.by(Sort.Direction.DESC, "amount"))));
 ```
-## Page
+### Page
 `page.getContent()`
 
-# Security
+## Spring Security
 
-## Authentication
+### Authentication
 
 - act of Principal proving its identity to the system
 - `Principal` : user of an API, person or  program.
@@ -396,26 +522,26 @@ PageRequest.of(
     - Component called prior to the Controller
     - Checks the user’s authentication
 
-## Authorization
+### Authorization
 
 - Spring Security provides Authorization via Role-Based Access Control (RBAC) #permissions
 - RBAC configured at both a global level or a per-method basis
 
-## Same Origin Policy
+### Same Origin Policy
 
 - Same Origin Policy (SOP)
 - relax the SOP with Cross-Origin Resource Sharing (CORS)
     - `@CrossOrigin` annotation without any arguments allows all origins /!\ 
 
-## Common Web Exploits
+### Common Web Exploits
 
-### Cross-Site Request Forgery
+#### Cross-Site Request Forgery
 - pronounced “Sea-Surf”, and also known as `Session Riding`
 -  CSRF Token for protection
 - only actions that a user is authorized to do can be executed.
 - Spring Security has built-in support for CSRF tokens which is enabled by default
 
-### Cross-Site Scripting (XSS)
+#### Cross-Site Scripting (XSS)
 - even more malicious since any script could be run
 
 ### Configuration
