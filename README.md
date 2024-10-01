@@ -108,6 +108,8 @@ equals
 @SpringBootApplication(scanBasePackages="example.config")
 ```
 
+Note : Component Scan in current package onwards (=any subpackage.)
+
 ## Override default configuration
 
 Overriding options :
@@ -118,12 +120,16 @@ Overriding options :
 Example: A `DataSource.class` defined stops SB from autoconfiguring a default `DataSource`.
 
 3. Explicitly disable some auto-config 
-
+ 
 via annotation:
 ```java
-@EnableAutoApplication(exclude="DataSourceAutoConfiguration.class")
+@EnableAutoConfiguration(exclude="DataSourceAutoConfiguration.class")
 ```
-or props file:
+or
+```java
+@SpringBootApplication(exclude = { DataSourceAutoConfiguration.class }) // for multiple excludes
+```
+via props file:
 ```yml
 spring:
   autoconfigure:
@@ -177,9 +183,69 @@ class MyServiceTests {
 }
 ```
 
+## Spring Boot JPA
 
+Enabled with
+ ```xml
+<dependency>
+  <groupID>org.springframework.boot</groupID>
+  <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+```
+If JPA is aon classpath autoconfigures:
+- `Datasource`
+- `EntityManagerFactoryBean`
+- `JpaTransactionManager`
 
- 
+Note : use `@EntityScan` when Entities are in different package than SpringBootApplication class
+
+ ```java
+@SpringBootApplication
+@EntityScan("rewards.internal")
+public class Application {}
+```
+
+## Spring Data Repositories for JPA
+
+### Spring Data
+
+![Spring Data](static/springData.png)
+
+- SpringBoot simplifies setup for data access (set up most JPA)
+- Spring Data simplifies Repositories (just define an interface)
+- ìt reduces boiler plate code.
+- implements Instant repositories 
+- Scans for interface extended `Repository<T,K>`
+- CRUD methods (find, save, delete) auto-generated if using `CrudRepository<T,K>` (extends `Repository`)
+- Paging, custom queries and sorting supported
+
+Different Datasources:
+- `@Entity` for SQL (map to a sql table). Every Entity needs an `@Id`
+- @Document for MongoDB (map to a json document)
+- @NodeEntity for Neo4j (map to a graph)
+- @Region for Gemfire (map to a region)
+
+```java
+public class CustomerRepository extends Repository<Customer, Long> {
+  @Query("SELECT c from Customer c WHERE c.emailAddress = ?1")
+  Customer findByEmail(String email); // ?1 replace by method param
+}
+```
+
+Accessing the Repository
+
+```java
+@Configuration
+@EnableJpaRepositories(basePackages="com.acme.repository")
+public class CustomerConfig {
+  @Bean
+  CustomerService cs(CustomerRepository repo) {
+      return new CustomerService(repo);
+  }; 
+}
+```
+
+`@Transient` on a field of Entity = no persisted
 
 # Spring Framework
 
