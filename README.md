@@ -163,14 +163,16 @@ in `pom.xml` with properties or dependencies management sections
 
 ## Packaging and Runtime
 ### Spring Boot (Maven) Plugin
-"fat" jar including dependencies and tomcat with **Spring Boot  Plugin** (gradle assemble or mvn package) 
-- 2 jars are created.
+
+Makes "fat" executable jars/wars including dependencies and tomcat
+
+- `spring-boot-maven-plugin` and `mvn package` (or gradle)
+- 2 jars are created: fat JAR & JAR.original (light)
 - run with `java -jar mySpringBootApp.jar`
 ## Integration Test
 ```java
 @SpringBootTest(classes=Application.class)
 class MyServiceTests {
-
 }
 ```
 @SpringBootTest searches for @SpringBootConfiguration
@@ -246,6 +248,155 @@ public class CustomerConfig {
 ```
 
 `@Transient` on a field of Entity = no persisted
+
+## Spring MVC
+
+implements MVC pattern
+
+Enabled with
+ ```xml
+<dependency>
+  <groupID>org.springframework.boot</groupID>
+  <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
+
+Ensures Spring Web and Spring MVC are on classpath
+
+### Controllers
+
+- `@Controller` on class 
+- `@GetMapping("/accounts")` + `@ResponseBody`on method
+- `@Controller` + `@ResponseBody` = `@RestController`
+- `@RequestParam` on method's param
+- `@PathVariable` on method's param
+- `@RequestHeader` on method's param
+- `@ResponseStatus(HttpStatus.NO_CONTENT)` on method returning void because default returning status code is 200.
+
+Injected arguments by Spring : `Principal`, `HttpSession`, `Locale` etc.
+
+### Message Converters
+
+Multiple response formats available. `@ResponseBody` specifies the response must be converted.
+
+Automatically accepts Request and converts Response accordingly: 
+- application/xml
+- application/json
+
+- `ResponseEntity` for entire HTTP response (header, status code, body)
+
+### JAR/WAR config
+
+SB autoconfiguration for Web Applications:
+- Sets up a `DispatcherServlet`
+- Sets up default resource locations (images, css, js)
+- Sets ups default message Converters
+- Sets up internal configuration to support controllers
+
+SB starts up en embedded web container (tomcat default) with one cmd `java -jar mySpringBootApp.jar`
+ 
+- both JAR and WAR forms can run from the CLI based on embedded tomcat (or jetty) JARs
+- Embedded tomcat JARs can cause conflicts whe running WAR inside traditional web container (ie when running with different version of tomcat)
+- Best Practice: MArk Tomcat dependencies as provided when building WARs for traditional containers.
+
+For `WAR` to be executed with CLI, must extend `SpringBootServletInitializer` :
+
+```java
+@SpringBootApplication
+public class Application extends SpringBootServletInitializer {
+  // Web Container Support, Specify the config class(es) to use
+  protected SpringApplicationBuilder configure(SpringApplicationBuilder applicationBuilder) {
+    return applicationBuilder.sources(Application.class);
+  }
+  // main() method from CLI
+  public static void main(String args[]) {
+    SpringApplication.run(Application.class, args);
+  }
+}
+```
+  
+`spring-boot-dev-tools`
+
+-avoid cold restart 
+-automatic app restart
+
+
+### MVC
+
+Files to get running
+
+- pom.xml : setup SB dependencies
+- RewardController class: Basic Spring MVC controller
+- application.properties: setup
+- Application class: Application Launcher
+
+Dependency : `spring-boot-starter-web`
+
+## RESTful app with SpringBoot
+
+REST principles:
+
+- Expose resources through URIs (nouns, not verbs)
+- Limited set of operations: GET, PUT, POST, DELETE for HTTP
+- Resources support multiple representation (Json, XML ...)
+- Representations link to other resources
+- HATEOAS : Hypermedia As The Engine Of Application State: means that RESTful response contains the links we need.
+- Stateless architecture
+  - no HttpSessions
+  - GETs can be cached on URL
+  - clients keep track of the state
+- Scalable
+- Support for redirect, caching resource identification, different representations
+
+
+- on method annotated `@PostMapping` return URI location of the resource with `ResponseEntity.created(build_URI_Here).build()`
+  - option 1: UriComponentsBuilder
+  - option 2: `ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{itemId}").buildAndExpand("item A").toUri();`
+
+### RestTemplateBuilder
+
+```java
+RestTemplate template = new RestTemplate();
+String uri : "http://example.com/store/orders/{id}/items";
+OrderItem[] items = template.getForObject(uri, OrderItem[].class, "1");
+URI itemLocation = template.postForLocation(uri,item,"1");
+template.put(itemLocation,item);
+template.delete(itemLocation);
+
+RequestEntity<OrdrItem> request = RequestEntity.post(new URI(itemUrl)).getHeaders().add(..basic...).body();
+ResponseEntity<Void> response = template.exchange(request, Void.class);
+```
+
+`WebClient` is preferred for streaming (#reactive,#nonBlocking)
+
+
+## Spring Boot Testing
+
+ - Dependency `spring-boot-starter-test` with scope *test*
+### `@SpringBootTest`:
+   - for integration testing
+   - automatically searches for `@SpringBootConfiguration`
+   - embedded servers gets started
+   - auto-configures a **TestRestTemplate**
+   - provides support for different `webEnvironment` modes (RADOM_PORT, DEFINED_PORT, MOCK, NONE)
+ 
+ ### `@ContextConfiguration` for slice testing
+ 
+### TestRestTemplate
+
+- alternative to `RestTemplate`
+- takes a relative path (vs absolute)
+- fault tolerant
+- configured to ignore cookies and redirects
+- customize with `RestTemplateBuilder` (message converters, timeouts etc.)
+
+### MockMVC Test 
+
+- `@SpringBootTest(webEnvironement = WebEnvironment.MOCK)` + `@AutoConfigureMockMvc` = `@WebMvcTest`
+- `mockMvc.perform(get().accept().header().content().content-type())` etc.
+- `perform(get()).andDo(print())` to debug tests
+
+
 
 # Spring Framework
 
@@ -672,7 +823,10 @@ Annotate class with `@Transactional`
 ## Spring Web
 
 - @RestController @RequestMapping("/cashcards")
-    - @PostMapping, @PutMapping("/{id}"), @GetMapping("/{id}") @DeleteMapping"/{id}"
+- @PostMapping, @PutMapping("/{id}"), @GetMapping("/{id}") @DeleteMapping"/{id}"
+- `@GetMapping("/store/orders")` is equivalent to `@RequestMapping(path="/stores/orders", method=RequestMethod.GET)`
+- `@RequestMethod` enumerators: GET,POST,PUT,PATCH,DELETE and HEAD,OPTIONS,TRACE must use this annotation.
+
 
 ### ResponseEntity
 - Spring Web (or http) provides the .created()

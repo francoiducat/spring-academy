@@ -21,6 +21,13 @@ public class JdbcRestaurantRepository implements RestaurantRepository {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
+	private class RestaurantRowMapper implements RowMapper<Restaurant> {
+		public Restaurant mapRow(ResultSet rs, int rowNum) throws SQLException {
+			return mapRestaurant(rs);
+		}
+	}
+
+
 	/**
 	 * Maps a row returned from a query of T_RESTAURANT to a Restaurant object.
 	 */
@@ -104,11 +111,4 @@ public class JdbcRestaurantRepository implements RestaurantRepository {
 		}
 	}
 
-	private class RestaurantRowMapper implements RowMapper<Restaurant> {
-
-		public Restaurant mapRow(ResultSet rs, int rowNum) throws SQLException {
-			return mapRestaurant(rs);
-		}
-
-	}
 }

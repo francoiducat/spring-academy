@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 @SpringBootApplication
 @Import(RewardsConfig.class)
-public class RewardsApplication {
+	public class RewardsApplication {
 	private final Logger logger = LoggerFactory.getLogger(RewardsApplication.class);
 
 	private static final String SQL = "SELECT count(*) FROM T_ACCOUNT";
