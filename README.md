@@ -392,11 +392,58 @@ ResponseEntity<Void> response = template.exchange(request, Void.class);
 
 ### MockMVC Test 
 
+- provides a mock web environment: no need for running an external app server
 - `@SpringBootTest(webEnvironement = WebEnvironment.MOCK)` + `@AutoConfigureMockMvc` = `@WebMvcTest`
 - `mockMvc.perform(get().accept().header().content().content-type())` etc.
 - `perform(get()).andDo(print())` to debug tests
 
+### Slice Testing
 
+- to perform isolated testing (web, repository, caching)
+
+### @WebMvcTest
+
+- disables full auto-configuration
+- apply auto-config mvc testing fwk only (`@Autowired MockMvc)
+- dependencies need to be mocked with `@MockBean`
+
+`@Mock`
+
+- from Mockito
+- used when spring context not needed
+
+`@MockBean`
+- from spring boot
+- used when spring context not needed
+  - creates a new mock bean when not present in the spring context OR 
+  - replaces a bean with a mock bean when it is present
+
+```java
+@WebMvcTest
+myControllerTest() {
+  @Autowired
+  private MockMvc mockMvc;
+  @MockBean
+  private myService myService;
+  
+  @Test
+  void test(){
+      mockMvc.perform(get()); //
+  }
+}
+
+```
+### @DataJpaTest
+
+- loads @Repository beans, excludes all other @Components
+- auto-configures `TestEntityManager`
+  - alternative to `EntityManager`
+  - provides a subset of `EntityManager` methods
+    - just those useful for tests
+    - helper methods for common testing tasks : `persistFlushFind()`, `persistAndFlush()`
+    - Uses an embedded in-memory database
+      - replaces any explicit or auto-configured DataSource
+      - `@AutoConfigureTestDatabase` can be used to override these settings.
 
 # Spring Framework
 
