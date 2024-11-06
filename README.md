@@ -373,14 +373,30 @@ ResponseEntity<Void> response = template.exchange(request, Void.class);
 ## Spring Boot Testing
 
  - Dependency `spring-boot-starter-test` with scope *test*
+
 ### `@SpringBootTest`:
+
    - for integration testing
    - automatically searches for `@SpringBootConfiguration`
-   - embedded servers gets started
+   - embedded servers gets started (#takesTimeToStart!)
    - auto-configures a **TestRestTemplate**
-   - provides support for different `webEnvironment` modes (RADOM_PORT, DEFINED_PORT, MOCK, NONE)
+   - provides support for different `webEnvironment` modes (RANDOM_PORT, DEFINED_PORT, MOCK, NONE)
+
+```java
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+public class MyClassTest {
+
+  @Autowired
+  private TestRestTemplate restTemplate;
+
+  @Test
+  void test() {
+    restTemplate.getForObject("url", MyDto.class);
+  }
+}
+```
  
- ### `@ContextConfiguration` for slice testing
+### `@ContextConfiguration` for slice testing
  
 ### TestRestTemplate
 
@@ -445,6 +461,133 @@ myControllerTest() {
       - replaces any explicit or auto-configured DataSource
       - `@AutoConfigureTestDatabase` can be used to override these settings.
 
+
+## Spring Security
+
+#### Principal
+user, device or system that performs an action
+#### Authentication
+- establishing that a principal's credentials are valid. 
+- authentication mechanisms: Basic, Digest, Form, X.509, OAuth 2.0 / OIDC
+- storage options for credential: in-memory (dev only), Database, LDAP
+#### Authorization
+- Deciding if a principal is allowed to access a resource
+- Depends on authentication : user identity must be established
+#### Authority
+- Permission or credential enabling access (such as a role like admin/member/guest)
+- A Role is simply a commonly used type of Authority
+#### Secured Resource
+Resource that is being secured
+
+### Why Spring Security?
+#### Portable
+can be used on any Spring project
+#### SOC
+- Business logic is decoupled from security concerns
+- Athenthication & Authorization are decoupled
+#### Felixible & Extensible
+- Authentication: Basic, Digest, Form, X.509, OAuth 2.0 / OIDC, Cookies etc.
+- Storage : LDAP, RDBMS, Props file, custom DAOs etc
+- Highly customizable
+
+ 
+### Setup and Configuration
+#### 1. Setup Filter chain
+- SecurityContextPersistenceFilter
+- LogoutFilter
+- UsernamePasswordAuthenticationFilter
+- ExceptionTranslationFilter
+- AuthorizationFilter
+
+#### 2. Configure security (authorization) rules
+
+Url Authorization & By-passing Security:
+
+```java
+@Configuration
+public class SpringSecurityConfig {
+    
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http.authorizeHttpRequests((authz) -> authz
+            .requestMatchers("/signup").permitAll() // allows open-access but still processed 
+            // by Spring Security Filter Chain
+            .requestMatchers("/accounts/edit").hasRole("ADMIN")
+            .requestMatchers("/accounts").hasAnyRole("ADMIN", "MEMBER")
+            .anyRequest().authenticated());
+    return http.build();
+  }
+
+  // By-passing Security completely
+  @Bean
+  public WebSecurityCustomizer webSecurityCustomizer() {
+    return web -> web.ignoring().requestMatchers("/swagger-ui/");
+  }
+}
+```
+
+Note: antMatchers and mvcMatchers are deprecated in SpringSecurity 5.8
+
+#### 3. Setup Web Authentication
+
+- Observing the default security behavior:
+password printed in the console. 
+- Run "curl -i localhost:8080/accounts" and observe 401 response
+- Run "curl -i -u user:<Spring-Boot-Generated-Password> localhost:8080/accounts"
+
+// - Configuring authorization based on roles
+
+// - Configuring authentication using in-memory storage
+
+```java
+@Configuration
+public class SpringSecurityConfig {
+
+    @Bean
+    public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder) {
+
+        // TODO-05: Add three users with corresponding roles:
+        // - "user"/"user" with "USER" role (example code is provided below)
+        // - "admin"/"admin" with "USER" and "ADMIN" roles
+        // - "superadmin"/"superadmin" with "USER", "ADMIN", and "SUPERADMIN" roles
+        // (Make sure to store the password in encoded form.)
+        // - pass all users in the InMemoryUserDetailsManager constructor
+        UserDetails user = User.withUsername("user").password(passwordEncoder.encode("user")).roles("USER").build();
+        UserDetails user = User.withUsername("admin").password(passwordEncoder.encode("admin")).roles("USER", "ADMIN").build();
+        UserDetails user = User.withUsername("superadmin").password(passwordEncoder.superadmin("user")).roles("USER","ADMIN", "SUPERADMIN").build();
+
+        return new InMemoryUserDetailsManager(user, admin, superadmin /* Add new users comma-separated here */);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+}
+```
+
+// - Configuring method-level security
+// - Adding custom UserDetailsService
+// - Adding custom AuthenticationProvider
+// - Writing test code for security
+
+
+#### Method Security
+
+### Security Testing
+
+```java
+@Configuration
+public class SpringSecurityConfig {
+    
+  @Test
+  @WithMockUser(roles = {"ADMIN", "SUPERADMIN"})
+  void test() {
+      
+  }
+        
+}
+```
 # Spring Framework
 
 - opensource framework: helps focus on business logic (pojo programing model)
