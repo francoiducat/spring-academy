@@ -6,6 +6,11 @@
   - Application.class (`@SpringBootApplication`)
 - JdbcTemplate bean automatically configured through auto-configuration
 
+A Spring Boot starter:
+- a pre-configured set of dependencies for specific tasks
+  - such as web development
+  - data access, etc.
+
 ## Dependency Management
 in the pom
 
@@ -14,7 +19,7 @@ in the pom
 ### Property files
 
 #### application.properties files
-`application.properties` (or `.yml`) found by Spring Boot in this order
+`application.properties` (or `.yml` or `.json) found by Spring Boot in this order
 
 - /config from working directory
 - the working directory
@@ -588,6 +593,69 @@ public class SpringSecurityConfig {
         
 }
 ```
+
+## Spring Boot Actuator
+
+`/actuator` is the base path (can be changed)
+
+### info
+general info: name, version...
+### health
+- a composite status (db, diskSpace, custom health status etc): `{"status" : "UP"}
+- possible to group health indicators
+- 
+
+### metrics
+- jvm, cup, connection pool etc. 
+- collected with micrometer
+
+#### Custom metrics:
+- Counter, Gauge, Timer, DistributionSummary (ie amount of an order)
+- created/registred with a `MeterRegistry` bean
+- listed on /actuator/metrics
+- fetched at /actuator/metrics/custom-metric-name
+
+#### Hierarchical vs Dimensional Metrics
+
+- Hierarchical
+  - key/value pair. Ex: http.method.get.status.200
+- Dimensional
+  - metrics are tagged. Ex: http?tag=method:get&tag=status:200&tag=region:us-east
+  - better naming convention
+  - add new attribute to a query is easy
+
+
+### setup
+- `spring-boot-starter-actuator` dependency
+### endpoints
+- beans
+- conditions
+- env
+- health
+- configprops
+- info
+- loggers
+- mappings
+- metrics
+- session, shutdown, threaddump, jolokia
+
+#### Enabled endpoints
+- its bean exists in the application context
+- all enabled except shutdown
+
+#### Exposed endpoints
+Accessible via:
+- JMX : all enabled endpoints exposed (only when spring.jmx.enabled=true)
+- HTTP : health (only when using spring MVC, WebFlux or Jersey)
+
+#### Custom expose
+management.endpoints.web.exposure.include=beans,metrics
+=> health not exposed in this config
+
+#### Secure endpoints
+![Secure endpoints with Spring Security](static/actuator.png)
+
+
 # Spring Framework
 
 - opensource framework: helps focus on business logic (pojo programing model)
